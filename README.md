@@ -18,26 +18,53 @@
 
 ## 安装
 
-克隆发布版本，再将仓库目录链接到 Agent 的技能目录。以下示例同时提供 Codex 和通用 agents 两个入口，共用同一份源码：
+使用 [Skills CLI](https://github.com/vercel-labs/skills) 安装，需要 Node.js 22.20+ 和 Git：
 
 ~~~bash
-mkdir -p "$HOME/.local/share/agent-skills"
-git clone --branch v0.1.0 --depth 1 https://github.com/Lumiaqian/video-wallpaper-research.git "$HOME/.local/share/agent-skills/video-wallpaper-research"
-
-mkdir -p "$HOME/.codex/skills" "$HOME/.agents/skills"
-ln -s "$HOME/.local/share/agent-skills/video-wallpaper-research" "$HOME/.codex/skills/video-wallpaper-research"
-ln -s "$HOME/.local/share/agent-skills/video-wallpaper-research" "$HOME/.agents/skills/video-wallpaper-research"
+npx skills add Lumiaqian/video-wallpaper-research
 ~~~
 
-已有同名目录时，先比较本地修改，再迁移到统一源码；上述命令不会覆盖它。其他 Agent 使用其实际支持的技能目录。
+按提示选择 Agent；默认安装到当前项目。若要全局安装供 Codex 使用：
 
-也可以从 GitHub Release 下载 ZIP，将解压后含 SKILL.md 的目录放入技能目录。
+~~~bash
+npx skills add Lumiaqian/video-wallpaper-research -g -a codex -y
+~~~
+
+安装器负责目录和来源记录。当前 CLI 的 Codex 全局安装位置为 `~/.agents/skills/video-wallpaper-research`，无需手动克隆仓库或建立两套目录链接。其他 Agent 按安装器的选项选择。
+
+如果以前手动链接到了开发仓库，迁移前先保留本地修改，并移除指向开发仓库的旧链接，再运行安装命令。
+
+需要固定版本时，可使用标签 URL：
+
+~~~bash
+npx skills add https://github.com/Lumiaqian/video-wallpaper-research/tree/v0.1.0 -g -a codex -y
+~~~
+
+也可以从 [GitHub Release](https://github.com/Lumiaqian/video-wallpaper-research/releases) 下载 ZIP，将解压后含 SKILL.md 的目录放入目标 Agent 的技能目录；手动安装的副本由自己更新。
+
+## 更新
+
+通过安装器跟踪主分支安装的全局副本，可以单独更新这个技能：
+
+~~~bash
+npx skills update video-wallpaper-research -g -y
+~~~
+
+固定标签安装的副本需要重新运行 `skills add`，指定新的标签。回退时指定之前的标签。
+
+查看 Codex 的全局安装：
+
+~~~bash
+npx skills list -g -a codex
+~~~
+
+项目级安装省略 `-g`，并在对应项目中执行。
 
 ## 目录核验脚本
 
 使用 Python 3.9+，仅依赖标准库；浏览器和登录操作由当前 Agent 环境提供。脚本不需要账号 Cookie，只读取公开分享目录，不下载或转存原片。
 
-在仓库根目录运行：
+在安装后的技能目录中运行：
 
 ~~~bash
 python3 scripts/inspect_quark_share.py 'https://pan.quark.cn/s/SHARE_ID' --output /absolute/path/share-evidence.json
@@ -47,7 +74,7 @@ python3 scripts/inspect_quark_share.py 'https://pan.quark.cn/s/SHARE_ID' --outpu
 
 `eligible_media` 只是云端元数据达标，不能据此宣称实际下载成功、原生 4K 或循环正常。提取码、定向扫描与字段说明见 [平台参考](references/bilibili-quark.md)。
 
-## 维护与更新
+## 开发与发布
 
 - [SKILL.md](SKILL.md)：使用场景、查找策略和证据边界。
 - [平台参考](references/bilibili-quark.md)：B 站、夸克的具体方法。
@@ -55,18 +82,7 @@ python3 scripts/inspect_quark_share.py 'https://pan.quark.cn/s/SHARE_ID' --outpu
 - [CHANGELOG.md](CHANGELOG.md)：每个版本的用户可见变化。
 - [VERSION](VERSION)：当前源码版本。
 
-main 保存可用版本，改动通过功能分支审阅后合并。发布时更新 VERSION 和 CHANGELOG，完成相关验证后创建不可随意改写的版本标签及 GitHub Release。ZIP 使用标签归档，不混入个人下载、检索输出和账号数据。
-
-使用固定版本安装的副本，可先拉取指定新标签、检查差异，再切换。例如从 v0.1.0 更新到将来的 v0.1.1：
-
-~~~bash
-TASK_SKILL_REPO="$HOME/.local/share/agent-skills/video-wallpaper-research"
-git -C "$TASK_SKILL_REPO" fetch origin refs/tags/v0.1.1:refs/tags/v0.1.1
-git -C "$TASK_SKILL_REPO" diff refs/tags/v0.1.0 refs/tags/v0.1.1 -- SKILL.md references scripts agents
-git -C "$TASK_SKILL_REPO" switch --detach refs/tags/v0.1.1
-~~~
-
-切换前处理本地修改。两个技能入口若链接到该仓库，会一起更新。遇到回归可检查差异后切回原标签。
+开发时单独克隆本仓库，修改源码后通过安装命令更新使用副本。main 保存可用版本，改动通过功能分支审阅后合并。发布时更新 VERSION 和 CHANGELOG，完成相关验证后创建版本标签及 GitHub Release；保留已发布标签的内容。ZIP 使用标签归档，不混入个人下载、检索输出和账号数据。
 
 ## 验证与打包
 
