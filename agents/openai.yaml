@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频壁纸素材研究"
+  short_description: "查找视频壁纸和网盘合集，核实真实文件、4K尺寸、发布时间与下载条件"
+  default_prompt: "使用 $video-wallpaper-research 查找符合要求的视频壁纸原片和网盘分享，注明来源、去重结果与实际核验阶段。"
