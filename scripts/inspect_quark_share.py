@@ -169,6 +169,8 @@ def inspect_share(value, *, passcode="", folder_id="0", max_depth=2,
             continue
         visited.add(current_id)
         page = 1
+        folder_total = None
+        folder_entries_read = 0
         while result["entries_scanned"] < max_entries:
             query = {
                 **common, "pwd_id": identifier, "stoken": token,
@@ -186,8 +188,16 @@ def inspect_share(value, *, passcode="", folder_id="0", max_depth=2,
             pages_read += 1
             rows = data["list"]
             metadata = response.get("metadata")
-            total = positive_number(metadata.get("_total"), integer=True) if isinstance(metadata, dict) else None
-            more = len(rows) >= PAGE_SIZE and (total is None or page * PAGE_SIZE < total)
+            if isinstance(metadata, dict):
+                folder_total = positive_number(metadata.get("_total"), integer=True) or folder_total
+            folder_entries_read += len(rows)
+            if folder_total is None:
+                more = len(rows) >= PAGE_SIZE
+            else:
+                more = folder_entries_read < folder_total
+            if more and not rows:
+                result["errors"].append({"path": parent, "reason": "incomplete_listing"})
+                break
             remaining = max_entries - result["entries_scanned"]
             batch = rows[:remaining]
             result["entries_scanned"] += len(batch)

@@ -48,7 +48,7 @@ python3 SKILL_DIR/scripts/inspect_quark_share.py 'https://pan.quark.cn/s/SHARE_I
 
 - 默认最多扫描 300 个条目、子目录深度 2；列表分页每次最多 100 个。优先定位角色／月度目录后定向核实，不递归拉取整个大网盘。
 - 输出中目录的 folder_id 可用于第二条命令。以该目录作为新起点后，relative_path 也从新起点计算。
-- 达到条目或深度限制、子目录读取失败时，listing_complete=false；unvisited_folders／errors 说明缺口。此时“未找到”不代表整份分享没有目标文件。
+- 达到条目或深度限制、目录读取失败或分页提前返回空页时，`listing_complete=false`。用 `unvisited_folders` 和 `errors` 说明缺口，此时“未找到”只适用于已读范围。
 - 默认 eligible_media 只包含扩展名为 MP4/MOV/M4V、云端像素至少 3840×2160 的文件。若要求其他口径可调整 --min-width／--min-height。文件扩展名并不证明内部容器与编码。
 - eligible_media 仍只是“目录及云端元数据达标”，download_status=not_attempted，不保证本账号可下载。
 - 分享有提取码时，设置临时环境变量 QUARK_SHARE_PASSCODE，再加 --passcode-env QUARK_SHARE_PASSCODE；不将码或访问令牌写入输出。

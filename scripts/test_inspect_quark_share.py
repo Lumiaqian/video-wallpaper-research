@@ -27,6 +27,8 @@ def public_api(pages):
         answer = pages[key]
         if isinstance(answer, Exception):
             raise answer
+        if isinstance(answer, dict):
+            return answer
         return {"data": {"list": answer}}
     return respond
 
@@ -61,6 +63,24 @@ class QuarkShareEvidenceTests(TestCase):
         })
         self.assertEqual(len(result["eligible_media"]), 101)
         self.assertTrue(result["listing_complete"])
+
+    def test_short_page_uses_reported_folder_total(self):
+        result = self.inspect({
+            ("0", 1): {"metadata": {"_total": 2}, "data": {"list": [video()]}},
+            ("0", 2): {"metadata": {"_total": 2}, "data": {"list": [video("last.mp4")]}},
+        })
+        self.assertEqual([item["file_name"] for item in result["eligible_media"]], ["loop.mp4", "last.mp4"])
+        self.assertTrue(result["listing_complete"])
+
+    def test_empty_page_before_folder_total_keeps_partial_results(self):
+        result = self.inspect({
+            ("0", 1): {"metadata": {"_total": 2}, "data": {"list": [video()]}},
+            ("0", 2): [],
+        })
+        self.assertEqual([item["file_name"] for item in result["eligible_media"]], ["loop.mp4"])
+        self.assertEqual(result["status"], "partial")
+        self.assertFalse(result["listing_complete"])
+        self.assertEqual(result["errors"], [{"path": "", "reason": "incomplete_listing"}])
 
     def test_entry_limit_does_not_claim_full_search(self):
         result = self.inspect({("0", 1): [video(f"{i}.mp4") for i in range(5)]}, max_entries=2)
