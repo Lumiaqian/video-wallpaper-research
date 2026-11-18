@@ -8,9 +8,9 @@
 - source_url：原始投稿；share_url：网盘入口。字段为空时明确未知，不编造。
 - relative_path／file_name：分享里的实际路径与文件名。
 - width／height／fps／duration_seconds／size_bytes：数值及其证据来源，缺失用 null。
-- source_published_at：原始投稿时间；cloud_modified_at：文件修改时间；checked_at：本轮核查时间。保留 ISO 8601 时区，不用“今天”“最近”代替。
+- `source_published_at` 记录原始投稿时间，`reposted_at` 记录已知的转载时间，`cloud_modified_at` 记录实际视频文件修改时间，`checked_at` 记录本轮核查时间。比较链接新旧时，可附该链接被公开贴出的日期和对应出处。保留 ISO 8601 时区，原帖时间未知用 null。
 - evidence_level：lead、cloud_metadata、downloaded、decoded、wallpaper_tested 之一，按实测填写。
-- download_status：not_attempted、completed、blocked、failed；附实际限制，目录可读并不代表可下载。
+- `download_status` 用 `not_attempted`、`completed`、`blocked`、`failed` 分别记录未发起、已完成、被明确限制和下载失败。未试下载时观察到的登录要求可单独备注。
 - local_path：仅真正下载后填写绝对路径。
 - suitability_notes：检查到的水印、黑场、镜头切换、循环和画幅情况；未看过完整原片时说明边界。
 - duplicate_of／scene_notes：同文件或同场景的依据。相同标题或时长只能作为疑似，不能直接定论。
